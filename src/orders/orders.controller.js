@@ -90,8 +90,9 @@ function deliverToIsValid(req, res, next) {
    const validStatus = ["pending", "preparing", "out-for-delivery", "delivered"];
     const method = req.method;
    //if(!validStatus.includes(status))next({status: 400, message: `Order1 must have a status of pending, preparing, out-for-delivery, delivered`});
-    if(method == "DELETE" && status !== "pending") next({status: 400, message: `An order cannot be deleted unless it is pending`});
-    if(status == "delivered") next({status: 400, message: `A delivered order cannot be changed`});
+   if(status == "delivered") next({status: 400, message: `A delivered order cannot be changed`}); 
+   if(method == "DELETE" && status !== "pending") next({status: 400, message: `An order cannot be deleted unless it is pending`});
+    
     if(status && status !== "" && status !== "invalid"){
         return next();
     }
