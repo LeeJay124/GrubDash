@@ -1,7 +1,7 @@
 const path = require("path");
 
 // Use the existing dishes data
-const dishes = require(path.resolve("src/data/dishes-data"));
+const dishes = require("../data/dishes-data");
 
 // Use this function to assign ID's when necessary
 const nextId = require("../utils/nextId");
@@ -12,16 +12,15 @@ function list(req, res){
     res.json({data: dishes.filter(dishId ? dish => dish.id === dishId : () => true ) });
 };
 function dishExists(req, res, next){
-    console.log("In dish Exists");
     const {dishId} = req.params;
-    const foundDish = dishes.find(dish => dish.id == dishId);
+    const foundDish = dishes.find(dish => dish.id === dishId);
     if(foundDish){
         res.locals.dish = foundDish;
         return next();
     }
     next({
         status: 404, 
-        message: `Dish id not found: ${dishId}`
+        message: `Dish does not exist: ${dishId}`
     });
 };
 function bodyHas(propertyName){
@@ -71,7 +70,7 @@ function nameIsValid(req, res, next) {
 
   function priceIsValid(req, res, next) {
     const { data: { price} = {} } = req.body;
-    if (Number.isInteger(price) == true && price.length > 0) {
+    if (typeof price == 'number' && price > 0) {
       return next();
     }
     next({
@@ -81,9 +80,23 @@ function nameIsValid(req, res, next) {
   };
   
   
+  function idMatch(req, res, next){
+    const {data: {id} = {}} = req.body;
+    const dishId = req.params.dishId;
+    if(id == null || id == undefined || id == ""){
+       return next();
+    }else if (id && id !== dishId){
+        return next({
+            status: 400, 
+            message: `Dish id does not match route id. Dish:${id}, Route: ${dishId}`
+        });
+    }
+    
+  };
+  
   function create (req, res){
     const {data: {name, description, price, image_url} ={}} = req.body;
-    const newOrder = {
+    const newDish = {
         id: nextId(), 
         name, 
         description, 
@@ -128,10 +141,12 @@ module.exports = {
     ], 
     read: [dishExists, read],
     update: [
+        dishExists,
         bodyHas("name"), 
         bodyHas("description"), 
         bodyHas("price"), 
         bodyHas("image_url"), 
+        idMatch,
         nameIsValid, 
         descriptionIsValid, 
         priceIsValid, 
@@ -139,4 +154,4 @@ module.exports = {
         update
     ]
 
-}
+};

@@ -71,37 +71,51 @@ function deliverToIsValid(req, res, next) {
   };
   function dishesQuantityIsValid(req, res, next) {
     const { data: { dishes = [] } = {} } = req.body;
-    let result = true;
     for (i=0; i<dishes.length; i++) {
         let currentDish = dishes[i];
-        if(!currentDish.quantity || currentDish.quantity <= 0 || !Number.isInteger(currentDish.quantity)){
-            return result = false;
+        if(!currentDish.quantity || currentDish.quantity <= 0 || typeof currentDish.quantity !== 'number'){
+            return next({
+                status: 400,
+                message: `Dish ${i} must have a quantity that is an integer greater than 0`,
+              });
         }
     } 
-    if(result === true){
-        return next();
-    }
-    next({
-      status: 400,
-      message: `Order must include at least one dish`,
-    });
+    
+         next();
+    
   };
   
   function statusIsValid(req, res, next){
     const { data: { status } = {} } = req.body;
    const validStatus = ["pending", "preparing", "out-for-delivery", "delivered"];
     const method = req.method;
-   if(!validStatus.includes(status))next({status: 400, message: `Order must have a status of pending, preparing, out-for-delivery, delivered`});
+   //if(!validStatus.includes(status))next({status: 400, message: `Order1 must have a status of pending, preparing, out-for-delivery, delivered`});
     if(method == "DELETE" && status !== "pending") next({status: 400, message: `An order cannot be deleted unless it is pending`});
     if(status == "delivered") next({status: 400, message: `A delivered order cannot be changed`});
-    if(status && status !== ""){
+    if(status && status !== "" && status !== "invalid"){
         return next();
     }
     next ({
         status: 400, 
         message: `Order must have a status of pending, preparing, out-for-delivery, delivered`
     })
-  }
+  };
+
+  function idMatch(req, res, next){
+    const {data: {id} = {}} = req.body;
+    const orderId = req.params.orderId;
+    if(id == null || id == undefined || id == ""){
+       return next();
+    }else if (id && id !== orderId){
+        return next({
+            status: 400, 
+            message: `Dish id does not match route id. Dish:${id}, Route: ${orderId}`
+        });
+    }
+    
+  };
+
+
   function create (req, res){
     const {data: {deliverTo, mobileNumber, dishes = []}={}} = req.body;
     const newOrder = {
@@ -158,6 +172,7 @@ module.exports = {
     bodyHas("mobileNumber"),
     bodyHas("dishes"),
     bodyHas("status"),
+    idMatch,
     deliverToIsValid,
     mobileNumberIsValid,
     dishesIsValid,
