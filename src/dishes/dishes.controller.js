@@ -81,16 +81,18 @@ function nameIsValid(req, res, next) {
   
   
   function idMatch(req, res, next){
-    const {data: {id} = {}} = req.body;
-    const dishId = req.params.dishId;
-    if(id == null || id == undefined || id == ""){
-       return next();
-    }else if (id && id !== dishId){
-        return next({
+    const {data: {id}} = req.body;
+    const dishId = req.params.dishId;  
+    if(id && id === dishId){
+      return next();
+    }
+    else if(!id || id == null || id == "undefined" || id == ""){
+      return next();
+    }
+        next({
             status: 400, 
             message: `Dish id does not match route id. Dish:${id}, Route: ${dishId}`
         });
-    }
     
   };
   

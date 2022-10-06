@@ -103,16 +103,18 @@ function deliverToIsValid(req, res, next) {
   };
 
   function idMatch(req, res, next){
-    const {data: {id} = {}} = req.body;
+    const {data: {id}} = req.body;
     const orderId = req.params.orderId;
-    if(id == null || id == undefined || id == ""){
-       return next();
-    }else if (id && id !== orderId){
-        return next({
-            status: 400, 
-            message: `Dish id does not match route id. Dish:${id}, Route: ${orderId}`
-        });
+    if(id && id === orderId){
+      return next();
     }
+    else if(!id || id == null || id == "undefined" || id == ""){
+      return next();
+    }
+        next({
+            status: 400, 
+            message: `Order id does not match route id. Order:${id}, Route: ${orderId}`
+        });
     
   };
 
@@ -146,14 +148,24 @@ function update(req, res){
     res.json({data: order});
 };
 
-function destroy(req, res){
+function destroy(req, res, next){
     const {orderId} = req.params;
-    const index = orders.findIndex((order)=> order.id === Number(orderId));
-    const deletedOrder = orders.splice(index, 1);
-    res.sendStatus(204);
-}
+    const index = orders.findIndex((order)=> order.id === orderId);
+  const { status} = res.locals.order;
 
+if(status === "pending") {
+        const deletedOrder = orders.splice(index, 1)
+        res.sendStatus(204);
+    }
 
+else {
+        next({
+            status: 400,
+            message: "Order status must be pending to delete."
+        })
+    }
+    
+};
 
 
 module.exports = {
@@ -179,5 +191,5 @@ module.exports = {
     dishesIsValid,
     dishesQuantityIsValid,
     statusIsValid, update], 
-    delete: [orderExists, statusIsValid, destroy]
+    delete: [orderExists, destroy]
 }
