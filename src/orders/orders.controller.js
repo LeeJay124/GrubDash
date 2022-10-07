@@ -11,6 +11,7 @@ function list(req, res){
     res.json({data: orders});
 };
 
+//Check if Order exist 
 function orderExists(req, res, next){
     const {orderId} = req.params;
     const foundOrder = orders.find(order => order.id === orderId);
@@ -24,6 +25,7 @@ function orderExists(req, res, next){
     });
 };
 
+//Check to see iif the property provided exists in the data
 function bodyHas(propertyName){
 return function(req,res,next){
     const {data = {}} = req.body;
@@ -36,7 +38,7 @@ return function(req,res,next){
     });
 };
 };
-
+//Confirm the deliverTo property is valid
 function deliverToIsValid(req, res, next) {
     const { data: { deliverTo } = {} } = req.body;
     if (deliverTo && deliverTo !== "") {
@@ -48,6 +50,7 @@ function deliverToIsValid(req, res, next) {
     });
   };
 
+  //Confirm the mobileNumber property is valid
   function mobileNumberIsValid(req, res, next) {
     const { data: { mobileNumber } = {} } = req.body;
     if (mobileNumber && mobileNumber !== "") {
@@ -58,7 +61,7 @@ function deliverToIsValid(req, res, next) {
       message: `Order must include a ${mobileNumber}`,
     });
   };
-
+//Confirm dishes are present
   function dishesIsValid(req, res, next) {
     const { data: { dishes = [] } = {} } = req.body;
     if (Array.isArray(dishes) == true && dishes.length > 0) {
@@ -69,6 +72,8 @@ function deliverToIsValid(req, res, next) {
       message: `Order must include at least one dish`,
     });
   };
+
+  //Confirm dishes quantity is valid
   function dishesQuantityIsValid(req, res, next) {
     const { data: { dishes = [] } = {} } = req.body;
     for (i=0; i<dishes.length; i++) {
@@ -85,6 +90,7 @@ function deliverToIsValid(req, res, next) {
     
   };
   
+  //Confirm the status present is valid
   function statusIsValid(req, res, next){
     const { data: { status } = {} } = req.body;
    const validStatus = ["pending", "preparing", "out-for-delivery", "delivered"];
@@ -102,6 +108,7 @@ function deliverToIsValid(req, res, next) {
     })
   };
 
+  //Confirm the route id matches the body id
   function idMatch(req, res, next){
     const {data: {id}} = req.body;
     const orderId = req.params.orderId;
@@ -118,7 +125,7 @@ function deliverToIsValid(req, res, next) {
     
   };
 
-
+//Create orders
   function create (req, res){
     const {data: {deliverTo, mobileNumber, dishes = []}={}} = req.body;
     const newOrder = {
@@ -132,10 +139,12 @@ function deliverToIsValid(req, res, next) {
     res.status(201).json({data: newOrder});
   };
   
+  //Read orders
 function read(req, res, next){
     res.json({data: res.locals.order});
 };
 
+//Update existing orders
 function update(req, res){
     const order = res.locals.order;
     const {data: {deliverTo, mobileNumber, status, dishes}={}} = req.body;
@@ -148,6 +157,8 @@ function update(req, res){
     res.json({data: order});
 };
 
+
+//Delete orders based on status
 function destroy(req, res, next){
     const {orderId} = req.params;
     const index = orders.findIndex((order)=> order.id === orderId);

@@ -11,6 +11,8 @@ function list(req, res){
     const {dishId} = req.params;
     res.json({data: dishes.filter(dishId ? dish => dish.id === dishId : () => true ) });
 };
+
+//Check if the dish exists
 function dishExists(req, res, next){
     const {dishId} = req.params;
     const foundDish = dishes.find(dish => dish.id === dishId);
@@ -23,6 +25,8 @@ function dishExists(req, res, next){
         message: `Dish does not exist: ${dishId}`
     });
 };
+
+//Check to see iif the property provided exists in the data
 function bodyHas(propertyName){
 return function(req,res,next){
     const {data = {}} = req.body;
@@ -36,6 +40,7 @@ return function(req,res,next){
 };
 };
 
+//Confirm the name is valid
 function nameIsValid(req, res, next) {
     const { data: { name } = {} } = req.body;
     if (name && name !== "") {
@@ -47,6 +52,7 @@ function nameIsValid(req, res, next) {
     });
   };
 
+  //Confirm the description is valid
   function descriptionIsValid(req, res, next) {
     const { data: { description } = {} } = req.body;
     if (description && description !== "") {
@@ -57,6 +63,8 @@ function nameIsValid(req, res, next) {
       message: `Dish must include a ${description}`,
     });
   };
+
+  //Confirm the image is valid
   function imageIsValid(req, res, next) {
     const { data: { image_url } = {} } = req.body;
     if (image_url && image_url !== "") {
@@ -68,6 +76,7 @@ function nameIsValid(req, res, next) {
     });
   };
 
+  //Confirm the price is valid
   function priceIsValid(req, res, next) {
     const { data: { price} = {} } = req.body;
     if (typeof price == 'number' && price > 0) {
@@ -79,7 +88,7 @@ function nameIsValid(req, res, next) {
     });
   };
   
-  
+  //Confirm the route id matches the body id
   function idMatch(req, res, next){
     const {data: {id}} = req.body;
     const dishId = req.params.dishId;  
@@ -96,6 +105,7 @@ function nameIsValid(req, res, next) {
     
   };
   
+  //Create dishes
   function create (req, res){
     const {data: {name, description, price, image_url} ={}} = req.body;
     const newDish = {
@@ -109,10 +119,12 @@ function nameIsValid(req, res, next) {
     res.status(201).json({data: newDish});
   };
   
+  //Read dishes
 function read(req, res, next){
     res.json({data: res.locals.dish});
 };
 
+//Update dishes
 function update(req, res){
     const dish = res.locals.dish;
     const {data: {name, description, price, image_url}={}} = req.body;
